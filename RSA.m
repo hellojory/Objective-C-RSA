@@ -24,11 +24,6 @@ static NSString *base64_encode_data(NSData *data){
 	return ret;
 }
 
-static NSData *base64_decode(NSString *str){
-	NSData *data = [[NSData alloc] initWithBase64EncodedString:str options:NSDataBase64DecodingIgnoreUnknownCharacters];
-	return data;
-}
-
 + (NSData *)stripPublicKeyHeader:(NSData *)d_key{
 	// Skip ASN.1 public key header
 	if (d_key == nil) return(nil);
@@ -187,7 +182,7 @@ static NSData *base64_decode(NSString *str){
 
 	// This will be base64 encoded, decode it.
 	NSData *data = base64_decode(key);
-	data = [RSA stripPrivateKeyHeader:data];
+	//data = [RSA stripPrivateKeyHeader:data];
 	if(!data){
 		return nil;
 	}
@@ -244,7 +239,7 @@ static NSData *base64_decode(NSString *str){
 	size_t src_block_size = block_size - 11;
 	
 	NSMutableData *ret = [[NSMutableData alloc] init];
-	for(int idx=0; idx<srclen; idx+=src_block_size){
+	for(int idx=0; idx<srclen; idx+=src_block_size) {
 		//NSLog(@"%d/%d block_size: %d", idx, (int)srclen, (int)block_size);
 		size_t data_len = srclen - idx;
 		if(data_len > src_block_size){
@@ -254,7 +249,7 @@ static NSData *base64_decode(NSString *str){
 		size_t outlen = block_size;
 		OSStatus status = noErr;
 		status = SecKeyEncrypt(keyRef,
-							   kSecPaddingPKCS1,
+							   kSecPaddingOAEP,
 							   srcbuf + idx,
 							   data_len,
 							   outbuf,
@@ -310,14 +305,14 @@ static NSData *base64_decode(NSString *str){
 		size_t outlen = block_size;
 		OSStatus status = noErr;
 		status = SecKeyDecrypt(keyRef,
-							   kSecPaddingNone,
+							   kSecPaddingOAEP,
 							   srcbuf + idx,
 							   data_len,
 							   outbuf,
 							   &outlen
 							   );
 		if (status != 0) {
-			NSLog(@"SecKeyEncrypt fail. Error Code: %d", status);
+			NSLog(@"SecKeyEncrypt fail. Error Code: %i", (int)status);
 			ret = nil;
 			break;
 		}else{
@@ -340,7 +335,6 @@ static NSData *base64_decode(NSString *str){
 	}
 	
 	free(outbuf);
-	CFRelease(keyRef);
 	return ret;
 }
 

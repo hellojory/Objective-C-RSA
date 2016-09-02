@@ -5,6 +5,11 @@
 
 #import <Foundation/Foundation.h>
 
+static NSData *base64_decode(NSString *str) {
+    NSData *data = [[NSData alloc] initWithBase64EncodedString:str options:NSDataBase64DecodingIgnoreUnknownCharacters];
+    return data;
+}
+
 @interface RSA : NSObject
 
 // return base64 encoded string
@@ -22,5 +27,8 @@
 + (NSData *)decryptData:(NSData *)data publicKey:(NSString *)pubKey;
 + (NSString *)decryptString:(NSString *)str privateKey:(NSString *)privKey;
 + (NSData *)decryptData:(NSData *)data privateKey:(NSString *)privKey;
-
++ (SecKeyRef)addPrivateKey:(NSString *)key;
++ (NSData *)decryptData:(NSData *)data withKeyRef:(SecKeyRef) keyRef;
++ (NSData *)stripPublicKeyHeader:(NSData *)d_key;
++ (NSData *)encryptData:(NSData *)data withKeyRef:(SecKeyRef) keyRef;
 @end
